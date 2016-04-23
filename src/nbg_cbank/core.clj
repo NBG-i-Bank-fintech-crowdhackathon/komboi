@@ -21,10 +21,10 @@
 
 (defn make-hikari-datasource [props]
   (let [hc (HikariConfig. (:hikari-props props))]
-    (HikariDataSource.  hc)))
+    {:datasource (HikariDataSource.  hc)}))
 
 (defn stop-hikari-datasource [ds]
-  (.close ds))
+  (.close {:datasource ds}))
 
 
 ;; (defn ws-handler [req]
@@ -93,6 +93,13 @@
         (new-ws conf)
         [:db])))
 
+(defn get-connection [db]
+  ((:connection db)))
+
+(defn project-list [db]
+  (j/with-db-connection [c (:connection db)]
+    (j/query c "SELECT * FROM projects")))
+
 (def app-conf {:hikari-props "resources/hikari.properties"
                :port 8989
                :ip "127.0.0.1"
@@ -110,3 +117,5 @@
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!"))
+
+
