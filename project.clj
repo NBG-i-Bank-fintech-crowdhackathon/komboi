@@ -16,6 +16,7 @@
                  ;;
                  [buddy/buddy-core "0.12.0"]
                  [buddy/buddy-auth "0.12.0"]
+                 [buddy/buddy-hashers "0.12.0"]
                  [buddy/buddy-sign "0.12.0"]
                  [com.zaxxer/HikariCP "2.4.5"]
                  ;;
