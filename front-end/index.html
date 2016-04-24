@@ -1,0 +1,455 @@
+<!doctype html>
+<html>
+   <head>
+      <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
+    	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular-route.js"></script>
+		  <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+			<link href="//cdn.muicss.com/mui-0.5.4/css/mui.min.css" rel="stylesheet" type="text/css" />
+    	<script src="//cdn.muicss.com/mui-0.5.4/js/mui.min.js"></script>
+	</head>
+   <body ng-app = "myapp">
+		 <div class="mui-appbar">
+			<table width="100%">
+				<tr style="vertical-align:middle;">
+					<td class="mui--appbar-height"
+							align="right">
+						<div class="mui--text-light-secondary mui--text-display2"
+								 style="padding-right: 50px; font-weight: bold">UFund</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+      <div ng-controller = "mainController">
+				<div>
+					<ul class="mui-tabs__bar mui-tabs__bar--justified">
+						<li class="mui--is-active">
+							<a data-mui-toggle="tab" data-mui-controls="pane-justified-1">Accepted</a></li>
+						<li><a data-mui-toggle="tab" data-mui-controls="pane-justified-2">Green Light</a></li>
+						<li><a data-mui-toggle="tab" data-mui-controls="pane-justified-3">Portfolio</a></li>
+						<li><a data-mui-toggle="tab" data-mui-controls="pane-justified-4">Triumphs</a></li>
+					</ul>
+					<div class="mui-tabs__pane mui--is-active" id="pane-justified-1">
+						<div class="mui-row">
+							<div class="mui-col-md-4"
+									 style="padding: 5px;"
+									 ng-if="approved[0] != null">
+								<div class="mui-container-fluid">
+								<img src="https://ksr-ugc.imgix.net/projects/2371363/photo-original.jpg?w=338&h=190&fit=fill&bg=FFFFFF&v=1460377036&auto=format&q=92&s=d9d106f5e40b261f96245fcb93bf855f"
+										 style="width:100%">
+									  <button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+														ng-if="approved[0].estimated_risk_factor === 'normal'"
+														style="margin-top: -65px; margin-right: 10px; z-index:1">inv</button>
+										<button class="mui-btn mui-btn--fab mui--pull-right"
+														ng-if="approved[0].estimated_risk_factor === 'high'"
+														style="margin-top: -65px;
+																	 background-color: orange;
+																	 margin-right: 10px;
+																	 z-index:1">inv</button>
+										<button class="mui-btn mui-btn--fab mui-btn--danger mui--pull-right"
+														ng-if="approved[0].estimated_risk_factor === 'extreme'"
+														style="margin-top: -65px; margin-right: 10px; z-index:1">inv</button>
+
+									<div class="mui--divider-bottom" style="font-weight: bold">
+										{{approved[0].project_name}} by {{approved[0].name}}
+									</div>
+									<div class="mui--divider-bottom" style="font-weight: normal">
+										Risk Factor: {{approved[0].estimated_risk_factor}}
+									</div>
+									<div class="mui--divider-bottom" style="font-style: italic">
+										Type: Anticulture
+									</div>
+									<div class="mui--divider-bottom">
+										{{approved[0].project_description}}
+									</div>
+									<div>
+										Current funding: {{(approved[0].current_amount / approved[0].required_amount) * 100 }}%
+									</div>
+								</div>
+							</div>
+						<div class="mui-col-md-4"
+									 style="padding: 5px;"
+								 	 ng-if="approved[1] != null">
+								<div class="mui-container-fluid">
+								<img src="https://ksr-ugc.imgix.net/projects/2353885/photo-original.png?w=338&h=190&fit=fill&bg=FFFFFF&v=1461022387&auto=format&q=92&s=3db528fe79ad682dd078a2c55779acf1"
+										 style="width:100%">
+									  <button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+														ng-if="approved[1].estimated_risk_factor === 'normal'"
+														style="margin-top: -65px; margin-right: 10px; z-index:1">inv</button>
+										<button class="mui-btn mui-btn--fab mui--pull-right"
+														ng-if="approved[1].estimated_risk_factor === 'high'"
+														style="margin-top: -65px;
+																	 background-color: orange;
+																	 margin-right: 10px;
+																	 z-index:1">inv</button>
+										<button class="mui-btn mui-btn--fab mui-btn--danger mui--pull-right"
+														ng-if="approved[1].estimated_risk_factor === 'extreme'"
+														style="margin-top: -65px; margin-right: 10px; z-index:1">inv</button>
+
+									<div class="mui--divider-bottom" style="font-weight: bold">
+										{{approved[1].project_name}} by {{approved[1].name}}
+									</div>
+									<div class="mui--divider-bottom" style="font-weight: normal">
+										Risk Factor: {{approved[1].estimated_risk_factor}}
+									</div>
+									<div class="mui--divider-bottom" style="font-style: italic">
+										Type: Anticulture
+									</div>
+										<div class="mui--divider-bottom">
+											{{approved[1].project_description}}
+									</div>
+									<div>
+										Current funding: {{(approved[1].current_amount / approved[1].required_amount) * 100 }}%
+									</div>
+								</div>
+							</div>
+							<div class="mui-col-md-4"
+									 style="padding: 5px;"
+									 ng-if="approved[2] != null">
+								<div class="mui-container-fluid">
+								<img src="https://ksr-ugc.imgix.net/projects/2389531/photo-original.jpg?w=338&h=190&fit=fill&bg=FFFFFF&v=1460843599&auto=format&q=92&s=ae6aa3eb0e15ba1b679dac3068ca3058"
+										 style="width:100%">
+									 <button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+													 ng-if="approved[2].estimated_risk_factor === 'normal'"
+													 ng-click="activateModal()"
+													 style="margin-top: -65px; margin-right: 10px; z-index:1">inv</button>
+										<button class="mui-btn mui-btn--fab mui--pull-right"
+														ng-if="approved[2].estimated_risk_factor === 'high'"
+														ng-click="activateModal()"
+														style="margin-top: -65px;
+																	 background-color: orange;
+																	 margin-right: 10px;
+																	 z-index:1">inv</button>
+										<button class="mui-btn mui-btn--fab mui-btn--danger mui--pull-right"
+														ng-if="approved[2].estimated_risk_factor === 'extreme'"
+														ng-click="activateModal()"
+														style="margin-top: -65px; margin-right: 10px; z-index:1">inv</button>
+
+									<div class="mui--divider-bottom" style="font-weight: bold">
+										{{approved[2].project_name}} by {{approved[2].name}}
+									</div>
+									<div class="mui--divider-bottom" style="font-weight: normal">
+										Risk Factor: {{approved[2].estimated_risk_factor}}
+									</div>
+									<div class="mui--divider-bottom" style="font-style: italic">
+										Type: Anticulture
+									</div>
+									<div class="mui--divider-bottom">
+										{{approved[2].project_description}}
+									</div>
+									<div>
+										Current funding: {{(approved[2].current_amount / approved[2].required_amount) * 100 }}%
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="mui-tabs__pane" id="pane-justified-2">
+					<div class="mui-row">
+						<div class="mui-col-md-4"
+								 style="padding: 5px;"
+								 ng-if="greenLight[0] != null">
+									<div class="mui-container-fluid">
+									<img src="https://ksr-ugc.imgix.net/projects/2268129/photo-original.png?w=338&h=190&fit=fill&bg=060606&v=1460016233&auto=format&q=92&s=d3312301ad264de76660a6d1722be26b"
+											 style="width:100%">
+											<button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+															ng-click="putVote(greenLight[0].project_id)"
+															ng-if="greenSwap_0"
+															style="margin-top: -65px; margin-right: 10px; z-index:1">+</button>
+											<button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+															ng-click="putVote(greenLight[0].project_id)"
+															ng-if="!greenSwap_0"
+															style="margin-top: -65px; margin-right: 10px; z-index:1">-</button>
+										<div class="mui--divider-bottom" style="font-weight: bold">
+											{{greenLight[0].project_name}} by {{greenLight[0].name}}
+										</div>
+										<div class="mui--divider-bottom" style="font-weight: normal">
+											Risk Factor: {{greenLight[0].estimated_risk_factor}}
+										</div>
+										<div class="mui--divider-bottom" style="font-style: italic">
+											Type: Anticulture
+										</div>
+											<div>
+												{{greenLight[0].project_description}}
+										</div>
+										<div>
+											{{greenLight[0].current_credibility}}
+											Credibility: {{(greenLight[0].current_credibility / greenLight[0].required_credibility) * 100 | number:2}}%
+											Remaining Votes: {{greenLight[0].required_credibility - greenLight[0].current_credibility}}
+										</div>
+									</div>
+								</div>
+						<div class="mui-col-md-4"
+								 style="padding: 5px;"
+								 ng-if="greenLight[1] != null">
+									<div class="mui-container-fluid">
+									<img src="https://ksr-ugc.imgix.net/projects/2428391/photo-original.png?w=338&h=190&fit=fill&bg=004DBD&v=1460985559&auto=format&q=92&s=f495591e6cb6204c7d252966af1241df"
+											 style="width:100%">
+											<button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+															ng-click="putVote(greenLight[1].project_id)"
+															ng-if="greenSwap_1"
+															style="margin-top: -65px; margin-right: 10px; z-index:1">+</button>
+											<button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+															ng-click="putVote(greenLight[1].project_id)"
+															ng-if="!greenSwap_1"
+															style="margin-top: -65px; margin-right: 10px; z-index:1">-</button>
+										<div class="mui--divider-bottom" style="font-weight: bold">
+											{{greenLight[1].project_name}} by {{greenLight[1].name}}
+										</div>
+										<div class="mui--divider-bottom" style="font-weight: normal">
+											Risk Factor: {{greenLight[1].estimated_risk_factor}}
+										</div>
+										<div class="mui--divider-bottom" style="font-style: italic">
+											Type: Anticulture
+										</div>
+											<div>
+												{{greenLight[1].project_description}}
+										</div>
+										<div>
+											{{greenLight[1].current_credibility}}
+											Credibility: {{(greenLight[1].current_credibility / greenLight[1].required_credibility) * 100 | number:2}}%
+											Remaining Votes: {{greenLight[1].required_credibility - greenLight[1].current_credibility}}
+										</div>
+									</div>
+								</div>
+						<div class="mui-col-md-4"
+								 style="padding: 5px;"
+								 ng-if="greenLight[2] != null">
+									<div class="mui-container-fluid">
+									<img src="https://ksr-ugc.imgix.net/projects/2268129/photo-original.png?w=338&h=190&fit=fill&bg=060606&v=1460016233&auto=format&q=92&s=d3312301ad264de76660a6d1722be26b"
+											 style="width:100%">
+											<button class="mui-btn mui-btn--fab mui-btn--primary mui--pull-right"
+															ng-click="putVote(greenLight[2].project_id)"
+															style="margin-top: -65px; margin-right: 10px; z-index:1">+</button>
+
+										<div class="mui--divider-bottom" style="font-weight: bold">
+											{{greenLight[2].project_name}} by {{greenLight[2].name}}
+										</div>
+										<div class="mui--divider-bottom" style="font-weight: normal">
+											Risk Factor: {{greenLight[2].estimated_risk_factor}}
+										</div>
+										<div class="mui--divider-bottom" style="font-style: italic">
+											Type: Anticulture
+										</div>
+											<div>
+												{{greenLight[2].project_description}}
+										</div>
+										<div>
+											Credibility: {{(greenLight[2].current_credibility / greenLight[2].required_credibility) * 100 | number:2}}%
+											Remaining Votes: {{greenLight[2].required_credibility - greenLight[2].current_credibility}}
+										</div>
+									</div>
+								</div>
+						</div>
+					</div>
+					<div class="mui-tabs__pane" id="pane-justified-3">
+					<div class="mui-row">
+							<div class="mui-col-md-4"
+									 style="padding: 5px;"
+									 ng-if="portfolio[0] != null">
+								<div class="mui-container-fluid">
+								<img src="https://ksr-ugc.imgix.net/projects/2373935/photo-original.jpg?w=338&h=190&fit=fill&bg=FFFFFF&v=1459960186&auto=format&q=92&s=f8e854de92c6c6d49dbfc42753c2b568"
+										 style="width:100%">
+									<div class="mui--divider-bottom" style="font-weight: bold">
+										{{portfolio[0].project_name}}
+									</div>
+									<div class="mui--divider-bottom" style="font-weight: normal">
+										Risk Factor: {{portfolio[0].estimated_risk_factor}}
+									</div>
+									<div class="mui--divider-bottom" style="font-style: italic">
+										Type: Anticulture
+									</div>
+									<div class="mui--divider-bottom">
+										{{portfolio[0].project_description}}
+									</div>
+									<div>
+										Shareholding: {{((portfolio[0].amount / portfolio[0].current_amount) * 100 )| number:2}}%
+									</div>
+								</div>
+							</div>
+						<div class="mui-col-md-4"
+									 style="padding: 5px;"
+								 	 ng-if="portfolio[1] != null">
+								<div class="mui-container-fluid">
+								<img src="https://ksr-ugc.imgix.net/projects/2233427/photo-original.jpg?w=338&h=190&fit=fill&bg=F5F6FA&v=1460059976&auto=format&q=92&s=8e5e80135d76022fbc8aa8477b633f9e"
+										 style="width:100%">
+									<div class="mui--divider-bottom" style="font-weight: bold">
+										{{portfolio[1].project_name}}
+									</div>
+									<div class="mui--divider-bottom" style="font-weight: normal">
+										Risk Factor: {{portfolio[1].estimated_risk_factor}}
+									</div>
+									<div class="mui--divider-bottom" style="font-style: italic">
+										Type: Anticulture
+									</div>
+										<div class="mui--divider-bottom">
+											{{portfolio[1].project_description}}
+										</div>
+									<div>
+										Shareholding: {{((portfolio[1].amount / portfolio[1].current_amount) * 100)| number:2}}%
+									</div>
+								</div>
+							</div>
+							<div class="mui-col-md-4"
+									 style="padding: 5px;"
+									 ng-if="portfolio[2] != null">
+								<div class="mui-container-fluid">
+								<img src="https://ksr-ugc.imgix.net/projects/2415377/photo-original.jpg?w=338&h=190&fit=fill&bg=FFFFFF&v=1459997049&auto=format&q=92&s=ba672b9f61fe6167071be3495ae9926a"
+										 style="width:100%">
+									<div class="mui--divider-bottom" style="font-weight: bold">
+										{{portfolio[2].project_name}}
+									</div>
+									<div class="mui--divider-bottom" style="font-weight: normal">
+										Risk Factor: {{portfolio[2].estimated_risk_factor}}
+									</div>
+									<div class="mui--divider-bottom" style="font-style: italic">
+										Type: Anticulture
+									</div>
+									<div class="mui--divider-bottom">
+										{{portfolio[2].project_description}}
+									</div>
+									<div>
+										Shareholding: {{((portfolio[2].amount / portfolio[2].current_amount) * 100)| number:2}}%
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="mui-tabs__pane" id="pane-justified-4">
+						<div class="mui-row">
+							<div class="mui-col-md-4"
+									 style="padding: 5px; opacity: 0.3">
+								<div class="mui-container-fluid">
+									<h1 style="font-weight: bolder;
+														 text-align: center;">
+										{{triumphs[0].triumph_type}}
+									</h1>
+								<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQ4tgQxnFPK8sn5nCRZK_bYWpdHBLNKrDV9kD1bE7KEZviyPQar"
+										 style="width:100%">
+									<h3 style="font-weight: bolder;
+														 text-align: center;">
+										{{triumphs[0].description}}
+									</h3>
+									<h1 style="font-weight: bolder;
+														 text-align: center;">
+										Locked - No, not yet...
+									</h1>
+								</div>
+							</div>
+							<div class="mui-col-md-4"
+									 style="padding: 5px;">
+								<div class="mui-container-fluid">
+									<h1 style="font-weight: bolder;
+														 text-align: center;">
+										{{triumphs[1].triumph_type}}
+									</h1>
+								<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRS18uiTXZq4GLJ1efNlLTiXrBUZjTIic857f_ZuJUfNcJR-HXk"
+										 style="width:100%">
+									<h3 style="font-weight: bolder;
+														 text-align: center;">
+										{{triumphs[1].description}}
+									</h3>
+									<h1 style="font-weight: bolder;
+														 text-align: center;">
+										Unlocked - {{triumphs[1].date_unlocked | date:'MM/dd/yyyy'}}
+									</h1>
+								</div>
+							</div>
+							<div class="mui-col-md-4"
+									 style="padding: 5px;">
+								<div class="mui-container-fluid">
+									<h1 style="font-weight: bolder;
+														 text-align: center;">
+										{{triumphs[2].triumph_type}}
+									</h1>
+								<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYb_4DwyO-CXUC2dGIWKdzVGNE7i0DTsHpc4v23zG1KBO0JgXd"
+										 style="width:100%">
+									<h3 style="font-weight: bolder;
+														 text-align: center;">
+										{{triumphs[2].description}}
+									</h3>
+									<h1 style="font-weight: bolder;
+														 text-align: center;">
+										Unlocked - {{triumphs[2].date_unlocked | date:'MM/dd/yyyy'}}
+									</h1>
+								</div>
+							</div>
+					</div>
+				</div>
+			</div>
+		 </div>
+
+      <script>
+         angular.module("myapp", [])
+         .controller("mainController", function($scope, $http) {
+           $scope.approved = {};
+					 $scope.greenLight = {};
+					 $scope.portfolio = {};
+					 $scope.triumphs = {};
+					 $scope.greenSwap_0 = true;
+					 $scope.greenSwap_1 = true;
+
+					 var urlBase = "http://megacorp1.eu/nbg_cbank/api/projects/";
+					 var url = "http://megacorp1.eu/nbg_cbank/api/projects/approved";
+					 var url1 = "http://megacorp1.eu/nbg_cbank/api/projects/greenlight";
+					 var url2 = "http://megacorp1.eu/nbg_cbank/api/portfolio";
+					 var url4 = "http://megacorp1.eu/nbg_cbank/api/triumphs"
+
+					 $scope.activateModal = function activateModal() {
+
+					}
+
+					 $scope.putVote = function putVote(pId) {
+						 console.log(pId);
+						 var url3 = [urlBase, pId ,"/swapvote"].join("");
+							$http.post(url3).success( function(response) {
+								})
+//							$scope.greenSwap_0 = !$scope.greenSwap_0;
+//							$scope.greenSwap_1 = !$scope.greenSwap_1;
+
+						 	init();
+					 }
+
+					 $scope.fechTriumphs = function fechTriumphs(url4){
+						 $http.get(url4).success( function(response) {
+							 $scope.triumphs = response;
+							})
+					 }
+
+					 $scope.fechApproved = function fechApproved(url) {
+						 $http.get(url).success( function(response) {
+							 $scope.approved = response;
+							})
+					 }
+
+					 $scope.fechGreenLight = function fechGreenLight(url1) {
+						 $http.get(url1).success( function(response) {
+							 if($scope.greenLight[0] != null){
+								 if($scope.greenLight[0].current_credibility !== response[0].current_credibility){
+											$scope.greenSwap_0 = !$scope.greenSwap_0;
+								 }
+								 if($scope.greenLight[1].current_credibility !== response[1].current_credibility){
+											$scope.greenSwap_1 = !$scope.greenSwap_1;
+								 }
+						 		}
+							 $scope.greenLight = response;
+							})
+					 }
+
+					 $scope.fechPortfolio = function fechPortfolio(url2) {
+						 $http.get(url2).success( function(response) {
+							 $scope.portfolio = response;
+							})
+					 }
+
+					var init = function () {
+						$scope.fechApproved(url);
+						$scope.fechGreenLight(url1);
+						$scope.fechPortfolio(url2);
+						$scope.fechTriumphs(url4);
+					}
+
+				 init();
+         });
+      </script>
+   </body>
+</html>
