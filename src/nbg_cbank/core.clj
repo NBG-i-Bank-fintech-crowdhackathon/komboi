@@ -2,12 +2,14 @@
   (:require [com.stuartsierra.component :as mc])
   (:require [compojure.core :as cc]
             [compojure.route :as cr])
-  (:require [org.httpkit.server :as wsrv])
+  (:require [org.httpkit.server :as wsrv]
+            [org.httpkit.client :as http])
   (:require [postal.core :as pc])
   (:require [honeysql.core :as hc]
             [honeysql.format :as hf]
             [honeysql.helpers :as hh])
   (:require [clojure.java.jdbc :as j])
+  (:require [clojure.data.json :as json])
   (:require [buddy.sign.jws :as sjws])
   (:require [clojure.tools.logging :as log])
   (:require [clojure.core.async :as asnc])
@@ -25,6 +27,33 @@
 
 (def demo-user-id #uuid "f3872015-ee21-4c33-9bc2-e1ac80073665")
 
+
+
+;; nbg related calls
+;; FIXME: add to system / component on pre web-server init
+;; (since normally WS calls will depend on this API)
+;; ALSO: Ocp should not be hardcoded
+(def nbg-urls
+  {:accounts "https://nbgdemo.azure-api.net/nodeopenapi/api/accounts/list"})
+
+(def cust-headers
+  {"Ocp-Apim-Subscription-Key" "917d0da05e054aa78e7195cdaeef58be"})
+
+(defn nbg-get-accounts [user-id] ;; not really used
+  (let [{status :status body :body}
+        @(http/get (:accounts nbg-urls)
+                   {:headers cust-headers})]
+    (if (= status 200)
+      (json/read-str body)
+      'error-retrieving-accounts)))
+
+(defn filter-accounts [user-id]
+  (filter (fn [q] (> (get q "balance") 0.0))
+          (get (nbg-get-accounts user-id) "accounts")))
+
+
+;; end nbg related calls
+
 (declare system)
 
 (defn make-hikari-datasource [props]
@@ -34,6 +63,8 @@
 (defn stop-hikari-datasource [ds]
   (.close {:datasource ds}))
 
+
+;; demo purposes only
 (defn cors-stuff [h]
   (fn [req]
     (let [resp (h req)]
@@ -45,27 +76,33 @@
       (h nreq))))
 
 
-(defn- put-cookie [resp user-id]
-  (assoc-in resp [:headers "set-cookie"]
-            (sjws/sign {"user_id" user-id} "superduper")))
-  
-(defn wrap-ck
-  "wrap with a fixed jwt (already logged in as demo-user-id)"
-  [h]
+;; (defn- put-cookie [resp user-id]
+;;   (assoc-in resp [:headers "set-cookie"]
+;;             (sjws/sign {"user_id" user-id} "superduper")))
+
+;; NOTE: unsigned jws for demo?
+;; (defn wrap-ck
+;;   "wrap with a fixed jwt (already logged in as demo-user-id)"
+;;   [h]
+;;   (fn [req]
+;;     (let [tt (get-in req [:headers "cookie"])]
+;;       (if (nil? tt)
+;;         (let [resp (h req)]
+;;           (put-cookie resp demo-user-id))
+;;         (try
+;;           (h (assoc req :user-id
+;;                     (java.util.UUID/fromString
+;;                      (get (sjws/unsign tt "superduper") :user_id))))
+;;           (catch Exception ex
+;;             ;; robust cookie login
+;;             (log/info (str ex))
+;;             (log/info "resetting cookie")
+;;             (put-cookie (h (assoc req :user-id demo-user-id)) demo-user-id)))))))
+
+;; substitute for cookies and JWS
+(defn wrap-ck [h]
   (fn [req]
-    (let [tt (get-in req [:headers "cookie"])]
-      (if (nil? tt)
-        (let [resp (h req)]
-          (put-cookie resp demo-user-id))
-        (try
-          (h (assoc req :user-id
-                    (java.util.UUID/fromString
-                     (get (sjws/unsign tt "superduper") :user_id))))
-          (catch Exception ex
-            ;; robust cookie login
-            (log/info (str ex))
-            (log/info "resetting cookie")
-            (put-cookie (h (assoc req :user-id demo-user-id)) demo-user-id)))))))
+    (h (assoc req :user-id demo-user-id))))
 
 (defn has-upvote [db user-id project-id]
   (> 
@@ -79,6 +116,44 @@
                  (hc/format)))))
    0))
 
+
+(defn get-user-weight [db user-id]
+  (first 
+   (j/with-db-connection [c (:connection db)]
+     (j/query
+      c
+      (-> (hh/select :inv_weight)
+          (hh/from :investors)
+          (hh/where [:= :user_id user-id])
+          (hc/format))))))
+
+(defn get-credibility [db project-id]
+  (first 
+   (j/with-db-connection [c (:connection db)]
+     (j/query
+      c
+      (-> (hh/select :current_credibility)
+          (hh/from :project_investor_credibility)
+          (hh/where [:= :project_id project-id])
+          (hc/format))))))
+
+
+;; This is wrong -- the weight should be calculated
+;; by summing records and not subtracted from the
+;; field
+(defn adjust-weight [db user-id project-id adj]
+  (let [uweight (:inv_weight (get-user-weight db user-id))
+        ucred (:current_credibility (get-credibility db project-id))]
+    (j/with-db-connection [c (:connection db)]
+      (j/execute!
+       c
+       (-> (hh/update :project_investor_credibility)
+           (hh/sset {:current_credibility (adj ucred uweight)})
+           (hh/where [:= :project_id project-id])
+           (hc/format))))))
+       
+      
+
 (defn del-vote [db user-id project-id]
   (j/with-db-connection [c (:connection db)]
     (j/execute!
@@ -86,15 +161,17 @@
      (-> (hh/delete-from :investor_greenlight)
          (hh/where [:and [:= :user_id user-id]
                     [:= :project_id project-id]])
-         (hc/format)))))
-
+         (hc/format))))
+  (adjust-weight db user-id project-id #'-))
+    
 (defn add-vote [db user-id project-id]
   (j/with-db-connection [c (:connection db)]
     (j/execute!
      c
      (-> (hh/insert-into :investor_greenlight)
          (hh/values [{:user_id user-id :project_id project-id}])
-         (hc/format)))))
+         (hc/format))))
+  (adjust-weight db user-id project-id #'+))
 
 (defn swap-vote [db user-id project-id]
   (if (has-upvote db user-id project-id)
@@ -107,7 +184,7 @@
     (j/query
      c
      ;; this should inner join in credibility
-     (-> (hh/select :p.project_id :p.project_name
+     (-> (hh/select :p.project_id :p.project_name :p.project_description
                     :p.required_amount :p.current_amount
                     :p.estimated_risk_factor 
                     :u.user_id :u.name
@@ -125,7 +202,7 @@
     (j/query
      c
      ;; this should inner join in credibility
-     (-> (hh/select :p.project_id :p.project_name
+     (-> (hh/select :p.project_id :p.project_name :p.project_description
                     :p.required_amount :p.current_amount
                     :p.estimated_risk_factor 
                     :u.user_id :u.name
@@ -197,13 +274,21 @@
     {:status 200
      :body (view-triumphs dbreq)})
 
+  (cc/GET "/accounts" {dbreq :db user-id :user-id}
+    {:status 200 ;; always?
+     :body (doall (map (fn [x]
+                         (into {}
+                               (map (fn [y] [y (get x y)])
+                                    ["type" "number" "id" "balance"])))
+                       (filter-accounts user-id)))})
+  
   (cc/POST "/projects/:project-id/swapvote" {dbreq :db user-id :user-id
                                             {:keys [project-id]} :params}
     {:status 200
      :body {:result
             (swap-vote dbreq user-id (java.util.UUID/fromString project-id))}}))
     
-    ;;(log/info (str "project-id " project-id))))
+;;(log/info (str "project-id " project-id))))
 
 
 (def wroutes
