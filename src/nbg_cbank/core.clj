@@ -62,13 +62,10 @@
                     (java.util.UUID/fromString
                      (get (sjws/unsign tt "superduper") :user_id))))
           (catch Exception ex
+            ;; robust cookie login
             (log/info (str ex))
             (log/info "resetting cookie")
             (put-cookie (h (assoc req :user-id demo-user-id)) demo-user-id)))))))
-
-        ;; (let [u (get (sjws/unsign tt "superduper") :user_id)]
-        ;;   (h (assoc req :user-id (java.util.UUID/fromString u))))))))
-
 
 (defn has-upvote [db user-id project-id]
   (> 
@@ -101,12 +98,11 @@
 
 (defn swap-vote [db user-id project-id]
   (if (has-upvote db user-id project-id)
-    (del-vote db user-id project-id)
-    (add-vote db user-id project-id)))
+    (do (del-vote db user-id project-id) false)
+    (do (add-vote db user-id project-id) true)))
 
 
 (defn view-projects [db user-id prop]
-  (log/info db)
   (j/with-db-connection [c (:connection db)]
     (j/query
      c
@@ -122,6 +118,27 @@
                     [:= :c.project_id :p.project_id]])
          (hc/format)))))
 
+;; FIXME: merge with above form and build select on the spot
+(defn view-project-details [db user-id project-id]
+  (first
+   (j/with-db-connection [c (:connection db)]
+    (j/query
+     c
+     ;; this should inner join in credibility
+     (-> (hh/select :p.project_id :p.project_name
+                    :p.required_amount :p.current_amount
+                    :p.estimated_risk_factor 
+                    :u.user_id :u.name
+                    :c.required_credibility :c.current_credibility)
+         (hh/from [:projects :p] [:investors :u] [:project_investor_credibility :c])
+         (hh/where [:and [:= :p.creating_user_id :u.user_id]
+                    [:= :c.project_id :p.project_id]
+                    [:= :p.project_id project-id]])
+         (hc/format))))))
+
+(defn view-project-details-upvotes [db user-id project-id]
+  (assoc (view-project-details db user-id project-id)
+         :upvote (has-upvote db user-id project-id)))
 
 (defn view-portfolio [db user-id]
   (j/with-db-transaction [c (:connection db)]
@@ -144,6 +161,12 @@
          (hh/order-by [:date_unlocked :desc])
          (hc/format)))))
 
+;; this should be a sinngle query
+(defn view-projects-with-upvotes [db user-id prop]
+  (doall
+   (map (fn [p] (assoc p :upvote (has-upvote db user-id (:project_id p))))
+        (view-projects db user-id prop))))
+
 (cc/defroutes cbank-routes
   (cc/GET "/" [] {:status 200
                   :body "the empty route"})
@@ -155,11 +178,17 @@
   (cc/GET "/projects/approved" {dbreq :db user-id :user-id}
     (log/info dbreq)
     {:status 200
-     :body (view-projects dbreq user-id"approved")})
+     :body (view-projects dbreq user-id "approved")})
+
   (cc/GET "/projects/greenlight" {dbreq :db user-id :user-id}
     {:status 200
-     :body (view-projects dbreq user-id "pending_greenlight")})
+     :body (view-projects-with-upvotes dbreq user-id "pending_greenlight")})
 
+  (cc/GET "/projects/:project-id" {dbreq :db user-id :user-id
+                                   {:keys [project-id]} :params}
+    {:status 200
+     :body (view-project-details-upvotes
+            dbreq user-id (java.util.UUID/fromString project-id))})
   (cc/GET "/portfolio" {dbreq :db user-id :user-id}
     {:status 200
      :body (view-portfolio dbreq user-id)})
@@ -168,12 +197,11 @@
     {:status 200
      :body (view-triumphs dbreq)})
 
-  (cc/GET "/projects/:project-id/swapvote" {dbreq :db user-id :user-id
+  (cc/POST "/projects/:project-id/swapvote" {dbreq :db user-id :user-id
                                             {:keys [project-id]} :params}
-    (do
-      (swap-vote dbreq user-id (java.util.UUID/fromString project-id))
-      {:status 200
-       :body "swapped"})))
+    {:status 200
+     :body {:result
+            (swap-vote dbreq user-id (java.util.UUID/fromString project-id))}}))
     
     ;;(log/info (str "project-id " project-id))))
 
