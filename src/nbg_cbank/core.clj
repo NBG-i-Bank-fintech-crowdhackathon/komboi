@@ -193,6 +193,7 @@
          (hh/where [:and [:= :p.creating_user_id :u.user_id]
                     [:= :p.state prop]
                     [:= :c.project_id :p.project_id]])
+         (hh/order-by :p.project_name)
          (hc/format)))))
 
 ;; FIXME: merge with above form and build select on the spot
@@ -211,6 +212,7 @@
          (hh/where [:and [:= :p.creating_user_id :u.user_id]
                     [:= :c.project_id :p.project_id]
                     [:= :p.project_id project-id]])
+         (hh/order-by :p.project_name)
          (hc/format))))))
 
 (defn view-project-details-upvotes [db user-id project-id]
